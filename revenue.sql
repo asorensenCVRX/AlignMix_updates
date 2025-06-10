@@ -1,0 +1,19 @@
+SELECT
+    ACT_ID,
+    SUM(SALES) AS R12_SALES
+FROM
+    tmpOpps
+WHERE
+    OPP_STATUS = 'CLOSED'
+    AND CLOSE_YYYYMM BETWEEN FORMAT(DATEADD(MONTH, -13, GETDATE()), 'yyyy_MM')
+    AND FORMAT(DATEADD(MONTH, -1, GETDATE()), 'yyyy_MM')
+    AND INDICATION_FOR_USE__C = 'Heart Failure - Reduced Ejection Fraction'
+    AND REASON_FOR_IMPLANT__C = 'De novo'
+GROUP BY
+    ACT_ID;
+
+
+SELECT
+    *
+FROM
+    tmpOpps
