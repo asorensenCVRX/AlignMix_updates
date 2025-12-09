@@ -1,18 +1,15 @@
 import pandas as pd
 from dbconnector.database import engine
 
-alignmix_file = "./Alignment Export (2025-10-21) PROPOSALS.xlsx"
+alignmix_file = "./Alignment Export (2025-12-09).xlsx"
 
 
 def personnel_data(connection):
     with open("./personnel.sql") as file:
         query = file.read()
     sql_df = pd.read_sql_query(query, connection)
-    excel_df = pd.read_excel("./Comp Planning Report.xlsx", sheet_name="1")
-    personnel = pd.merge(sql_df, excel_df, how="left", left_on="Personnel ID", right_on="Work Contact: Work Email")
-    personnel = personnel[["Job Title", "Personnel ID", "Name", "TERRITORY_ID", "TERR_NM",
-                           "REGION_ID", "REGION_NM", "Address Line 1", "Address Line 2", "City", "Zip", "State"]]
-    return personnel
+
+    return sql_df
 
 
 def zip_codes():
@@ -45,9 +42,13 @@ def accounts(connection):
     merged["Segment"] = merged["TIER"].fillna(merged["Segment"])
     merged.drop("TIER", axis=1, inplace=True)
     # USE THE FOLLOWING ONLY FOR PRODUCTION UPLOADS, NOT FOR PROPOSALS UPLOADS
-    # merged["DE_FACTO_TERR"] = merged["DE_FACTO_TERR"].fillna(merged["Territory ID"])
-    # merged.drop("Territory ID", axis=1, inplace=True)
-    # merged = merged.rename(columns={"DE_FACTO_TERR": "Territory ID"})
+    merged["DE_FACTO_TERR"] = merged["DE_FACTO_TERR"].fillna(merged["Territory ID"])
+    merged.drop("Territory ID", axis=1, inplace=True)
+    merged = merged.rename(columns={"DE_FACTO_TERR": "Territory ID"})
+
+    # METRICS FOR 2026 COMP MODELING
+    merged["YTD Avg Per Billing Day"] = merged["CY_SALES"] / 228
+    merged["2025 FY Rev (Run Rated)"] = merged["YTD Avg Per Billing Day"] * 250
     return merged
 
 
